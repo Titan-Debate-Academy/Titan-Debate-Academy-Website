@@ -1357,7 +1357,10 @@ footer h4{color:#fff;font-size:1.38rem;margin:0 0 12px}
     box.classList.remove('bad');
     btn.disabled=true;
     btn.textContent='Sending...';
-    emailjs.sendForm('service_5dfoq2z','template_5oyvi8k',box).then(function(){
+    Promise.all([
+      emailjs.sendForm('service_5dfoq2z','template_5oyvi8k',box),
+      emailjs.sendForm('service_5dfoq2z','template_j6m7gw6',box)
+    ]).then(function(){
       box.style.display='none';
       done.classList.add('show');
     },function(error){
