@@ -9,6 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script type="text/javascript">
+  emailjs.init("cKKVazpbz02Yn_p_w");
+</script>
 <style>
 :root{
   --ink:#1E2126;
@@ -1142,13 +1146,15 @@ footer h4{color:#fff;font-size:1.38rem;margin:0 0 12px}
       <div>
         <h4>Book a free trial class</h4>
         <p style="margin:0 0 14px;max-width:40ch">Leave your email and we will reply within one business day with two or three class times that fit.</p>
-        <div class="signup" id="signupBox">
+        <form class="signup" id="signupBox">
+          <label for="name" style="position:absolute;left:-9999px">Name</label>
+          <input id="name" name="name" type="text" placeholder="Your name" autocomplete="name">
           <label for="email" style="position:absolute;left:-9999px">Email address</label>
-          <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
-          <p class="err">Enter a valid email address.</p>
-          <button class="btn" id="signupBtn" type="button">Send my request</button>
+          <input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email">
+          <p class="err">Enter your name and a valid email address.</p>
+          <button class="btn" id="signupBtn" type="submit">Send my request</button>
           <p class="small">Used only to schedule the class. No mailing list, no sharing.</p>
-        </div>
+        </form>
         <div class="signed" id="signed" role="status" aria-live="polite">
           <b>Request sent.</b> We will email you within one-two business days. 
         </div>
@@ -1333,17 +1339,37 @@ footer h4{color:#fff;font-size:1.38rem;margin:0 0 12px}
     },{passive:true});
   }
 
-  /* email sign-up */
-  var box=document.getElementById('signupBox'), input=document.getElementById('email'),
-      btn=document.getElementById('signupBtn'), done=document.getElementById('signed');
-  function send(){
+  /* email sign-up, sent via EmailJS */
+  var box=document.getElementById('signupBox'),
+      nameInput=document.getElementById('name'),
+      input=document.getElementById('email'),
+      btn=document.getElementById('signupBtn'),
+      done=document.getElementById('signed');
+  function send(e){
+    if(e) e.preventDefault();
     var v=input.value.trim();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ box.classList.add('bad'); input.focus(); return; }
-    box.style.display='none'; done.classList.add('show');
+    var validEmail=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    if(!nameInput.value.trim() || !validEmail){
+      box.classList.add('bad');
+      (nameInput.value.trim() ? input : nameInput).focus();
+      return;
+    }
+    box.classList.remove('bad');
+    btn.disabled=true;
+    btn.textContent='Sending...';
+    emailjs.sendForm('service_5dfoq2z','template_5oyvi8k',box).then(function(){
+      box.style.display='none';
+      done.classList.add('show');
+    },function(error){
+      btn.disabled=false;
+      btn.textContent='Send my request';
+      alert('Something went wrong sending your request. Please try again or email us directly.');
+      console.log('EmailJS error:',error);
+    });
   }
-  btn.addEventListener('click',send);
-  input.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+  box.addEventListener('submit',send);
   input.addEventListener('input',function(){ box.classList.remove('bad'); });
+  nameInput.addEventListener('input',function(){ box.classList.remove('bad'); });
 
   /* 3D tilt: cards react to the cursor with a real perspective tilt, a chosen child popping
      forward in true 3D depth (see .tilt-active rules in CSS), and a moving light sheen */
